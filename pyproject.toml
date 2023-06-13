@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "02-test-amthauer"
+version = "0.1.0"
+description = "Diplom work"
+authors = ["Ivan Shevchenko <slipklop@mail.ru>"]
+readme = "README.md"
+packages = [{include = "02_test_amthauer"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django-ninja = "^0.22.1"
+django-debug-toolbar = "^4.1.0"
+django-extensions = "^3.2.1"
+django-cors-headers = "^4.0.0"
+psycopg2-binary = "^2.9.6"
+python-dotenv = "^1.0.0"
+pyjwt = "^2.7.0"
+uvicorn = "^0.22.0"
+django-ckeditor = "^6.5.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
