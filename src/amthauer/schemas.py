@@ -73,11 +73,12 @@ class SessionSchemaIn(SessionSchemaBase):
 class ParticipantSchemaBase(ModelSchema):
     class Config:
         model = Participant
-        model_fields = ['user', 'first_name', 'last_name', 'gender', 'date_of_birth', 'email', 'phone_number']
+        model_fields = ['first_name', 'last_name', 'gender', 'date_of_birth', 'email', 'phone_number']
 
 
 class ParticipantSchemaOut(ParticipantSchemaBase):
     id: int
+    user_id: int | None
     session: SessionSchemaOut | None
 
     @staticmethod

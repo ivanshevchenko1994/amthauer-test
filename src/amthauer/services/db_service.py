@@ -78,6 +78,10 @@ def create_participant_answer(participant_answer_schema: ParticipantAnswerSchema
 def create_participant(user_id: UserId, participant_schema: ParticipantSchemaIn) -> tuple[
                                                     int, QuerySet | Participant] | \
                                                 tuple[int, ResponseSchema]:
+    print('++++++++++++++++++++++++++++++++++++++')
+    print(participant_schema)
+    print(user_id)
+    print('++++++++++++++++++++++++++++++++++++++')
     try:
         new_participant: QuerySet | Participant = Participant(
             user_id=user_id,
