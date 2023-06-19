@@ -7,6 +7,7 @@ class AnswerSchemaBase(ModelSchema):
     class Config:
         model = Answer
         model_fields = ['question', 'answer_text', 'is_correct', 'order', 'is_active']
+        # order_by = ['order']
 
 
 class AnswerSchemaOut(AnswerSchemaBase):
@@ -17,6 +18,7 @@ class QuestionSchemaBase(ModelSchema):
     class Config:
         model = Question
         model_fields = ['component', 'question_text', 'difficulty_level', 'order', 'is_active']
+        # order_by = ['order']
 
 
 class QuestionSchemaOut(QuestionSchemaBase):
@@ -28,6 +30,7 @@ class ComponentSchemaBase(ModelSchema):
     class Config:
         model = Component
         model_fields = ['component_name', 'component_description', 'component_title', 'order', 'is_active']
+        # order_by = ['order']
 
 
 class ComponentSchemaOut(ComponentSchemaBase):

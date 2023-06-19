@@ -3,7 +3,7 @@ from django.db.models import QuerySet
 from config.constants.api_const import HttpStatus, ErrorKeys, ErrorResponse
 from src.account.value_objects import UserId
 from src.amthauer.models import Component, Session, ParticipantAnswer, Participant, ScoreResult
-from src.amthauer.schemas import SessionSchemaIn, ParticipantAnswerSchemaIn, ParticipantSchemaIn
+from src.amthauer.schemas import SessionSchemaIn, ParticipantAnswerSchemaIn, ParticipantSchemaIn, ScoreResultSchemaIn
 from src.common.schemas.common_schemas import ResponseSchema
 
 
@@ -104,7 +104,7 @@ def create_participant(user_id: UserId, participant_schema: ParticipantSchemaIn)
         )
 
 
-def create_score_result(score_result_schema: ParticipantSchemaIn) -> tuple[
+def create_score_result(score_result_schema: ScoreResultSchemaIn) -> tuple[
                                                     int, QuerySet | ScoreResult] | \
                                                 tuple[int, ResponseSchema]:
     try:
@@ -146,3 +146,29 @@ def update_participant_by_id(participant_id: int, participant_schema: Participan
         return HttpStatus.BAD_REQUEST.value, ResponseSchema(
             **{ErrorKeys.MESSAGE.value: ErrorResponse.SHOW_ONE_DB_ENTRY_ERROR.value}
         )
+
+
+def calculate_score_result_for_specific_session(session_id: int) -> ScoreResult | QuerySet:
+    print(session_id)
+    session = Session.objects.get(id=session_id)
+    time_diff_seconds = int(abs(session.calculate_time_difference_seconds()))
+    print(time_diff_seconds)
+    participant_answers = ParticipantAnswer.objects.select_related('answer').filter(session_id=session_id)
+    print(participant_answers)
+
+    correct_answers = []
+    for participant_answer in participant_answers:
+        if participant_answer.answer.is_correct:
+            correct_answers.append(participant_answer.answer.id)
+        print(participant_answer.answer.is_correct)
+
+    score_result = ScoreResult(
+            session_id=session_id,
+            raw_score=len(correct_answers),
+            standardized_score=0,
+            percentile_rank=0,
+            time_taken_seconds=time_diff_seconds,
+        )
+    score_result.save()
+
+    return score_result

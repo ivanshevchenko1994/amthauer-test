@@ -44,6 +44,11 @@ class Session(DateTimeMixin):
     start_time = models.DateTimeField(blank=True, null=True)
     end_time = models.DateTimeField(blank=True, null=True)
 
+    def calculate_time_difference_seconds(self):
+        time_diff = self.start_time - self.end_time
+        time_diff_seconds = time_diff.total_seconds()
+        return time_diff_seconds
+
     def __str__(self):
         return f'{self.participant} {self.test_date}'
 

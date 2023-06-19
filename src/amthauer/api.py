@@ -1,12 +1,13 @@
+from django.db.models import Prefetch
 from django.http import HttpRequest
 from ninja import Router
 
 from config.constants.api_const import HttpStatus
-from src.amthauer.models import Component, Session, ParticipantAnswer, Participant
+from src.amthauer.models import Component, Session, ParticipantAnswer, Participant, Question, Answer
 from src.amthauer.schemas import ComponentSchemaOut, SessionSchemaOut, SessionSchemaIn, ParticipantAnswerSchemaOut, \
     ParticipantAnswerSchemaIn, ParticipantSchemaOut, ParticipantSchemaIn, ScoreResultSchemaOut, ScoreResultSchemaIn
 from src.amthauer.services.db_service import create_session, update_session_by_id, create_participant_answer, \
-    create_participant, create_score_result, update_participant_by_id
+    create_participant, create_score_result, update_participant_by_id, calculate_score_result_for_specific_session
 from src.common.schemas.common_schemas import ResponseSchema
 from src.security.services.jwt_service import AuthBearer
 
@@ -23,7 +24,11 @@ amthauer_router = Router(tags=['amthauer'])
 )
 def get_test_data(request: HttpRequest):
     """Get all components and all questions with answer and return single json response"""
-    return Component.objects.all()
+    return Component.objects.filter(is_active=True).order_by('order').prefetch_related(
+        Prefetch('question_set', queryset=Question.objects.filter(is_active=True).order_by('order').prefetch_related(
+            Prefetch('answer_set', queryset=Answer.objects.filter(is_active=True).order_by('order'))
+        ))
+    )
 
 
 @amthauer_router.post(
@@ -74,7 +79,7 @@ def get_participant(request: HttpRequest, participant_id: int):
     },
     auth=AuthBearer(),
 )
-def update_entry(request: HttpRequest, participant_id: int, participant_schema: ParticipantSchemaIn):
+def update_participant_entry(request: HttpRequest, participant_id: int, participant_schema: ParticipantSchemaIn):
     """Update entry"""
     return update_participant_by_id(participant_id, participant_schema)
 
@@ -114,7 +119,7 @@ def get_all_session(request: HttpRequest):
     },
     auth=AuthBearer(),
 )
-def update_entry(request: HttpRequest, session_id: int, session_schema: SessionSchemaIn):
+def update_session_entry(request: HttpRequest, session_id: int, session_schema: SessionSchemaIn):
     """Update entry"""
     return update_session_by_id(session_id, session_schema)
 
@@ -156,3 +161,16 @@ def get_participant_answers(request: HttpRequest, session_id: int):
 def create_new_score_result(request: HttpRequest, score_result_schema: ScoreResultSchemaIn):
     """Create new entry"""
     return create_score_result(score_result_schema)
+
+
+@amthauer_router.get(
+    "/score_result/calculate_score_result/{session_id}",
+    response={
+        HttpStatus.OK.value: ScoreResultSchemaOut,
+        HttpStatus.BAD_REQUEST.value: ResponseSchema,
+    },
+    auth=AuthBearer(),
+)
+def calculate_score_result(request: HttpRequest, session_id: int):
+    """Create new entry"""
+    return calculate_score_result_for_specific_session(session_id)
